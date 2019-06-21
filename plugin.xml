@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="cordova-plugin-linphone" version="0.1.0" xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+    <name>LinphonePlugin</name>
+    <js-module name="LinphonePlugin" src="www/LinphonePlugin.js">
+        <clobbers target="Linphone" />
+    </js-module>
+    <platform name="android">
+        <config-file parent="/*" target="res/xml/config.xml">
+            <feature name="LinphonePlugin">
+                <param name="android-package" value="cordova.plugin.linphone.LinphonePlugin" />
+            </feature>
+        </config-file>
+        <config-file parent="/*" target="AndroidManifest.xml">
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <uses-permission android:name="android.permission.WAKE_LOCK" />
+            <uses-permission android:name="android.permission.RECORD_AUDIO" />
+            <uses-permission android:name="android.permission.CAMERA" />
+        </config-file>
+        <!-- Add Service to the manifest -->
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <service
+                android:name="cordova.plugin.linphone.LinphoneService"
+                android:label="@string/app_name" />
+        </config-file>
+        
+        <source-file src="src/android/LinphonePlugin.java" target-dir="src/cordova/plugin/linphone" />
+        <source-file src="src/android/LinphoneService.java" target-dir="src/cordova/plugin/linphone" />
+        <source-file src="src/android/raw/linphonerc_default" target-dir="res/raw/linphonerc_default" />
+        <source-file src="src/android/raw/linphonerc_factory" target-dir="res/raw/linphonerc_factory" />
+         <framework src='src/android/linphone.gradle' custom='true' type='gradleReference' />
+    </platform>
+</plugin>

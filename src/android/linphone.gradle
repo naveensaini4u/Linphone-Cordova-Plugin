@@ -1,0 +1,20 @@
+repositories{
+	jcenter()
+	maven {
+		url "https://linphone.org/snapshots/maven_repository"
+	}
+	maven {
+		url "https://maven.google.com"
+	}
+}
+android {
+	compileSdkVersion 28
+	defaultConfig {
+		minSdkVersion 21
+		targetSdkVersion 28
+		
+	}
+}
+dependencies {
+    implementation "org.linphone:linphone-sdk-android:4.2+"
+}

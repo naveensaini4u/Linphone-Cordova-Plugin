@@ -1,0 +1,17 @@
+{
+  "name": "cordova-plugin-linphone",
+  "version": "0.1.0",
+  "description": "Linphone Cordova Plugin to use Linphone in cordova based applications.",
+  "cordova": {
+    "id": "cordova-plugin-linphone",
+    "platforms": [
+      "android"
+    ]
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-android"
+  ],
+  "author": "Naveen Saini",
+  "license": "Apache 2.0 License"
+}
