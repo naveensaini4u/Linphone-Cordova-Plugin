@@ -2,6 +2,7 @@ package cordova.plugin.linphone;
 
 import android.content.Intent;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.apache.cordova.CordovaPlugin;
@@ -13,11 +14,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.linphone.core.AccountCreator;
+import org.linphone.core.Address;
+import org.linphone.core.Call;
+import org.linphone.core.CallParams;
 import org.linphone.core.Core;
 import org.linphone.core.CoreListenerStub;
 import org.linphone.core.ProxyConfig;
 import org.linphone.core.RegistrationState;
 import org.linphone.core.TransportType;
+
 
 import io.ionic.starter.R;
 
@@ -45,8 +50,39 @@ public class LinphonePlugin extends CordovaPlugin {
                 public void onRegistrationStateChanged(Core core, ProxyConfig cfg, RegistrationState state, String message) {
                     if (state == RegistrationState.Ok) {
                         Toast.makeText(cordova.getContext(), "success: " + message, Toast.LENGTH_LONG).show();
+                        pluginResult = new PluginResult(PluginResult.Status.OK, "success: User Register Successfully!");
+                        pluginResult.setKeepCallback(true);
+                        callbackContext.sendPluginResult(pluginResult);
                     } else if (state == RegistrationState.Failed) {
                         Toast.makeText(cordova.getContext(), "Failure: " + message, Toast.LENGTH_LONG).show();
+                        pluginResult = new PluginResult(PluginResult.Status.OK, "Failure: user authentication failed");
+                        pluginResult.setKeepCallback(true);
+                        callbackContext.sendPluginResult(pluginResult);
+                    } else if (state == RegistrationState.Progress) {
+                        Toast.makeText(cordova.getContext(), "Progress: " + message, Toast.LENGTH_LONG).show();
+                        pluginResult = new PluginResult(PluginResult.Status.OK, "Process: user authentication is in process");
+                        pluginResult.setKeepCallback(true);
+                        callbackContext.sendPluginResult(pluginResult);
+                    } else if (state == RegistrationState.Cleared) {
+                        Toast.makeText(cordova.getContext(), RegistrationState.Cleared+" " + message, Toast.LENGTH_LONG).show();
+                        pluginResult = new PluginResult(PluginResult.Status.OK, RegistrationState.Cleared+"Process: user authentication is in process");
+                        pluginResult.setKeepCallback(true);
+                        callbackContext.sendPluginResult(pluginResult);
+                    } else if (state == RegistrationState.None) {
+                        Toast.makeText(cordova.getContext(), RegistrationState.None+" " + message, Toast.LENGTH_LONG).show();
+                        pluginResult = new PluginResult(PluginResult.Status.OK, RegistrationState.None+"Process: user authentication is in process");
+                        pluginResult.setKeepCallback(true);
+                        callbackContext.sendPluginResult(pluginResult);
+                    }
+                }
+
+                @Override
+                public void onCallStateChanged(Core core, Call call, Call.State state, String message) {
+                    if (state == Call.State.End || state == Call.State.Released) {
+                        Toast.makeText(cordova.getContext(), "Success: " + message, Toast.LENGTH_LONG).show();
+                        pluginResult = new PluginResult(PluginResult.Status.OK, "Success: "+message);
+                        pluginResult.setKeepCallback(true);
+                        callbackContext.sendPluginResult(pluginResult);
                     }
                 }
             };
@@ -57,11 +93,41 @@ public class LinphonePlugin extends CordovaPlugin {
             String message = args.getString(0);
             this.registerSIP(args, callbackContext);
             return true;
+        } else if (action.equals("acceptCall")) {
+            this.acceptCall();
+            return true;
+        } else if (action.equals("makeCall")) {
+
+            try {
+                String username = args.get(0).toString();
+                String domain = args.get(1).toString();
+                String displayName = args.get(2).toString();
+
+                makeCall(username, domain, displayName);
+
+            } catch (JSONException e) {
+            }
+
         }
         return false;
     }
 
+    private void acceptCall() {
+        Core core = LinphoneService.getCore();
+        CallParams params = core.createCallParams(LinphoneService.getCall());
+        params.enableVideo(true);
+        LinphoneService.getCall().acceptWithParams(params);
+    }
 
+    public static void makeCall(String username, String domain, String displayName) {
+        String url = username + "@" + domain;
+        Core core = LinphoneService.getCore();
+        Address addressToCall = core.interpretUrl(url);
+        CallParams params = core.createCallParams(null);
+        if (addressToCall != null) {
+            core.inviteAddressWithParams(addressToCall, params);
+        }
+    }
 
     private void coolMethod(String message, CallbackContext callbackContext) {
         if (message != null && message.length() > 0) {
@@ -72,41 +138,50 @@ public class LinphonePlugin extends CordovaPlugin {
     }
 
     public void registerSIP( JSONArray args, CallbackContext callbackContext){
+        //String transport = args.get(4).toString();
+        String transport = null;
+
+        // At least the 3 below values are required
+        //mAccountCreator.setUsername(args.get(0).toString());
         try {
-            String transport = args.get(3).toString();
-
-            // At least the 3 below values are required
             mAccountCreator.setUsername(args.get(0).toString());
-            mAccountCreator.setDomain(args.get(1).toString());
-            mAccountCreator.setPassword(args.get(2).toString());
 
-            // By default it will be UDP if not set, but TLS is strongly recommended
-            switch (transport) {
-                case "UDP":
-                    mAccountCreator.setTransport(TransportType.Udp);
-                    break;
-                case "TCP":
-                    mAccountCreator.setTransport(TransportType.Tcp);
-                    break;
-                case "TLS":
-                    mAccountCreator.setTransport(TransportType.Tls);
-                    break;
-            }
+        mAccountCreator.setDisplayName(args.get(1).toString());
+            mAccountCreator.setDomain(args.get(2).toString());
+            mAccountCreator.setPassword(args.get(3).toString());
+        /*mAccountCreator.setUsername("3124576892");
+        //mAccountCreator.setDisplayName(args.get(1).toString());
+        mAccountCreator.setDomain("200.75.46.99");
+        mAccountCreator.setPassword("CxTSYweBvf");*/
+        mAccountCreator.setTransport(TransportType.Udp);
 
-            // This will automatically create the proxy config and auth info and add them to the Core
-            ProxyConfig cfg = mAccountCreator.createProxyConfig();
-            // Make sure the newly created one is the default
-            LinphoneService.getCore().setDefaultProxyConfig(cfg);
 
-            pluginResult = new PluginResult(PluginResult.Status.OK, "Registeration start!");
-            pluginResult.setKeepCallback(true);
-            callbackContext.sendPluginResult(pluginResult);
+        // By default it will be UDP if not set, but TLS is strongly recommended
+        /*switch (transport) {
+            case "UDP":
+                mAccountCreator.setTransport(TransportType.Udp);
+                break;
+            case "TCP":
+                mAccountCreator.setTransport(TransportType.Tcp);
+                break;
+            case "TLS":
+                mAccountCreator.setTransport(TransportType.Tls);
+                break;
+        }*/
 
+        // This will automatically create the proxy config and auth info and add them to the Core
+        ProxyConfig cfg = mAccountCreator.createProxyConfig();
+        // Make sure the newly created one is the default
+        LinphoneService.getCore().setDefaultProxyConfig(cfg);
+        //LinphoneService.getCore().setUserAgent();
+
+        pluginResult = new PluginResult(PluginResult.Status.OK, "Registeration start!");
+        pluginResult.setKeepCallback(true);
+        callbackContext.sendPluginResult(pluginResult);
         } catch (JSONException e) {
-            pluginResult = new PluginResult(PluginResult.Status.OK, "Error:"+e);
-            pluginResult.setKeepCallback(true);
-            callbackContext.sendPluginResult(pluginResult);
+            e.printStackTrace();
         }
+
     }
 
     public void configureAccount(){

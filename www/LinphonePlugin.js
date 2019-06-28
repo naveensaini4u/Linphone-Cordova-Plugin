@@ -9,9 +9,13 @@ exports.initLinphoneCore = function(success, fail) {
 };
 
 exports.registerSIP = function(username,domain,password,transport,success, fail) {
-    exec(success, fail, "LinphonePlugin", "registerSIP", [username,domain,password,transport]);
+    exec(success, fail, "LinphonePlugin", "registerSIP", [username,domain,displayName,password,transport]);
 };
 
 exports.acceptCall = function(success, fail) {
     exec(success, fail, "LinphonePlugin", "acceptCall", []);
+};
+
+exports.makeCall = function(username,domain,displayName,success, fail) {
+    exec(success, fail, "LinphonePlugin", "makeCall", [username,domain,displayName]);
 };

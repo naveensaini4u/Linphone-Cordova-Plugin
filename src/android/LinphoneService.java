@@ -1,12 +1,19 @@
 package cordova.plugin.linphone;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
@@ -14,6 +21,7 @@ import android.widget.Toast;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.PluginResult;
+import org.linphone.core.BuildConfig;
 import org.linphone.core.Call;
 import org.linphone.core.CallParams;
 import org.linphone.core.Core;
@@ -43,6 +51,8 @@ public class LinphoneService extends Service {
     private Timer mTimer;
     PluginResult pluginResult;
 
+    private static Call recievedCall;
+
     private Core mCore;
     private CoreListenerStub mCoreListener;
 
@@ -56,6 +66,9 @@ public class LinphoneService extends Service {
 
     public static Core getCore() {
         return sInstance.mCore;
+    }
+    public static Call getCall() {
+        return recievedCall;
     }
 
     @Nullable
@@ -90,9 +103,13 @@ public class LinphoneService extends Service {
                 if (state == Call.State.IncomingReceived) {
                     Toast.makeText(LinphoneService.this, "Incoming call received, answering it automatically", Toast.LENGTH_LONG).show();
                     // For this sample we will automatically answer incoming calls
-                    CallParams params = getCore().createCallParams(call);
-                    params.enableVideo(true);
-                    call.acceptWithParams(params);
+                    recievedCall = call;
+//                    Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+//                    Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+//                    r.play();
+//                    CallParams params = getCore().createCallParams(call);
+//                    params.enableVideo(true);
+//                    call.acceptWithParams(params);
                 } else if (state == Call.State.Connected) {
                     pluginResult = new PluginResult(PluginResult.Status.OK, "connected" +
                             "");
@@ -159,14 +176,16 @@ public class LinphoneService extends Service {
 
     @Override
     public void onDestroy() {
-        mCore.removeListener(mCoreListener);
-        mTimer.cancel();
-        mCore.stop();
+
+        System.out.println("service Removed");
+//        mCore.removeListener(mCoreListener);
+//        mTimer.cancel();
+//        mCore.stop();
         // A stopped Core can be started again
         // To ensure resources are freed, we must ensure it will be garbage collected
-        mCore = null;
+        //mCore = null;
         // Don't forget to free the singleton as well
-        sInstance = null;
+        //sInstance = null;
 
         super.onDestroy();
     }
@@ -174,7 +193,16 @@ public class LinphoneService extends Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         // For this sample we will kill the Service at the same time we kill the app
-        stopSelf();
+        //stopSelf();
+        Intent restartServiceTask = new Intent(getApplicationContext(),this.getClass());
+        restartServiceTask.setPackage(getPackageName());
+        PendingIntent restartPendingIntent =PendingIntent.getService(getApplicationContext(), 1,restartServiceTask, PendingIntent.FLAG_ONE_SHOT);
+        AlarmManager myAlarmService = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        myAlarmService.set(
+                AlarmManager.ELAPSED_REALTIME,
+                SystemClock.elapsedRealtime() + 1000,
+                restartPendingIntent);
+
 
         super.onTaskRemoved(rootIntent);
     }
@@ -190,6 +218,17 @@ public class LinphoneService extends Service {
             }
         }
         mCore.setUserCertificatesPath(userCerts);
+        String deviceName = Build.DEVICE;
+        String appName = "Linphone";
+        String androidVersion = BuildConfig.VERSION_NAME;
+        String userAgent = appName + "/" + androidVersion + " (" + deviceName + ") LinphoneSDK";
+
+        mCore.setUserAgent(
+                userAgent,
+                getString(R.string.linphone_sdk_version)
+                        + " ("
+                        + getString(R.string.linphone_sdk_branch)
+                        + ")");
     }
 
     private void dumpDeviceInformation() {
