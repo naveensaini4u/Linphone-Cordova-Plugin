@@ -20,15 +20,14 @@ import android.widget.Toast;
 
 
 import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.PluginResult;
 import org.linphone.core.BuildConfig;
 import org.linphone.core.Call;
-import org.linphone.core.CallParams;
 import org.linphone.core.Core;
 import org.linphone.core.CoreListenerStub;
 import org.linphone.core.Factory;
 import org.linphone.core.LogCollectionState;
-import org.linphone.core.MediaDirection;
 import org.linphone.core.tools.Log;
 import org.linphone.mediastream.Version;
 
@@ -39,7 +38,8 @@ import java.io.InputStream;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import io.ionic.starter.R;
+
+
 
 public class LinphoneService extends Service {
     private static final String START_LINPHONE_LOGS = " ==== Device information dump ====";
@@ -52,6 +52,7 @@ public class LinphoneService extends Service {
     PluginResult pluginResult;
 
     private static Call recievedCall;
+    public static CordovaInterface cordova;
 
     private Core mCore;
     private CoreListenerStub mCoreListener;
@@ -86,8 +87,8 @@ public class LinphoneService extends Service {
         String basePath = getFilesDir().getAbsolutePath();
         Factory.instance().setLogCollectionPath(basePath);
         Factory.instance().enableLogCollection(LogCollectionState.Enabled);
-        Factory.instance().setDebugMode(true, getString(R.string.app_name));
 
+        Factory.instance().setDebugMode(true, getString(cordova.getActivity().getResources().getIdentifier("app_name", "string", cordova.getActivity().getPackageName())));
         // Dump some useful information about the device we're running on
         Log.i(START_LINPHONE_LOGS);
         dumpDeviceInformation();
@@ -122,9 +123,9 @@ public class LinphoneService extends Service {
         try {
             // Let's copy some RAW resources to the device
             // The default config file must only be installed once (the first time)
-            copyIfNotExist(R.raw.linphonerc_default, basePath + "/.linphonerc");
+            copyIfNotExist(cordova.getActivity().getResources().getIdentifier("linphonerc_default", "raw", cordova.getActivity().getPackageName()), basePath + "/.linphonerc");
             // The factory config is used to override any other setting, let's copy it each time
-            copyFromPackage(R.raw.linphonerc_factory, "linphonerc");
+            copyFromPackage(cordova.getActivity().getResources().getIdentifier("linphonerc_factory", "raw", cordova.getActivity().getPackageName()), "linphonerc");
         } catch (IOException ioe) {
             Log.e(ioe);
         }
@@ -225,9 +226,9 @@ public class LinphoneService extends Service {
 
         mCore.setUserAgent(
                 userAgent,
-                getString(R.string.linphone_sdk_version)
+                getString(cordova.getActivity().getResources().getIdentifier("linphone_sdk_version", "string", cordova.getActivity().getPackageName()))
                         + " ("
-                        + getString(R.string.linphone_sdk_branch)
+                        + getString(cordova.getActivity().getResources().getIdentifier("linphone_sdk_branch", "string", cordova.getActivity().getPackageName()))
                         + ")");
     }
 

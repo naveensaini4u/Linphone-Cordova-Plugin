@@ -36,9 +36,11 @@ public class LinphonePlugin extends CordovaPlugin {
     private CoreListenerStub mCoreListener;
     private AccountCreator mAccountCreator;
 
+
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         this.callbackContext = callbackContext;
+        LinphoneService.cordova = cordova;
         if (action.equals("coolMethod")) {
             String message = args.getString(0);
             this.coolMethod(message, callbackContext);
@@ -140,14 +142,15 @@ public class LinphonePlugin extends CordovaPlugin {
     public void registerSIP( JSONArray args, CallbackContext callbackContext){
         //String transport = args.get(4).toString();
         String transport = null;
-
         // At least the 3 below values are required
         //mAccountCreator.setUsername(args.get(0).toString());
         try {
+            System.out.println("send data=> "+args.get(0).toString()+" "+args.get(1).toString()+" "+args.get(2).toString()+" "+args.get(3).toString());
+
             mAccountCreator.setUsername(args.get(0).toString());
 
-        mAccountCreator.setDisplayName(args.get(1).toString());
-            mAccountCreator.setDomain(args.get(2).toString());
+        mAccountCreator.setDisplayName(args.get(2).toString());
+            mAccountCreator.setDomain(args.get(1).toString());
             mAccountCreator.setPassword(args.get(3).toString());
         /*mAccountCreator.setUsername("3124576892");
         //mAccountCreator.setDisplayName(args.get(1).toString());
