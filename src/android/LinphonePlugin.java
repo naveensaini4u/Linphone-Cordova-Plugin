@@ -2,7 +2,6 @@ package cordova.plugin.linphone;
 
 import android.content.Intent;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.Toast;
 
 import org.apache.cordova.CordovaPlugin;
@@ -12,7 +11,6 @@ import org.apache.cordova.PluginResult;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.linphone.core.AccountCreator;
 import org.linphone.core.Address;
 import org.linphone.core.Call;
@@ -24,7 +22,6 @@ import org.linphone.core.RegistrationState;
 import org.linphone.core.TransportType;
 
 
-import io.ionic.starter.R;
 
 /**
  * This class echoes a string called from JavaScript.
