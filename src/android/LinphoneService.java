@@ -11,7 +11,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
 import android.widget.Toast;
 
 
@@ -69,7 +68,7 @@ public class LinphoneService extends Service {
         return recievedCall;
     }
 
-    @Nullable
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
