@@ -26,8 +26,8 @@
         
         <source-file src="src/android/LinphonePlugin.java" target-dir="src/cordova/plugin/linphone" />
         <source-file src="src/android/LinphoneService.java" target-dir="src/cordova/plugin/linphone" />
-        <source-file src="src/android/raw/linphonerc_default" target-dir="res/raw/linphonerc_default" />
-        <source-file src="src/android/raw/linphonerc_factory" target-dir="res/raw/linphonerc_factory" />
+        <source-file src="src/android/raw" target-dir="res/raw/linphonerc_default" />
+        <source-file src="src/android/raw" target-dir="res/raw/linphonerc_factory" />
          <framework src='src/android/linphone.gradle' custom='true' type='gradleReference' />
     </platform>
 </plugin>
